@@ -28,13 +28,13 @@ Object* Render_World::Closest_Intersection(const Ray& ray,Hit& hit)
 		double min_t = 10000.0;
 		Object* closest=NULL;
 
-		for(size_t i = 0 ; i < objects.size();i++)
+		for(size_t i = 0 ; i < objects.size();i++)//search all the object
 		{
 				std::vector<Hit> hits;
-				if(objects[i]->Intersection(ray,hits))
+				if(objects[i]->Intersection(ray,hits))//if true means 1-2 Hit push back to hits
 				{
 					int index = hits.size()-1;
-					if(hits[index].t < min_t)
+					if(hits[index].t < min_t && hits[index].t> small_t)//if this intersection is closer to the resource it will be the object returned
 					{
 						closest=objects[i];
 						hit.t= hits[index].t;
@@ -54,8 +54,8 @@ void Render_World::Render_Pixel(const ivec2& pixel_index)
 {
 		Ray ray; // TODO: set up the initial view ray here
 		/*
-end_point : camera position (from camera class)
-direction: a unit vector from the camera position to the world position of the pixel.
+        end_point : camera position (from camera class)
+        direction: a unit vector from the camera position to the world position of the pixel.
 		 */
 		ray.endpoint = camera.position;
 		vec3 world = camera.World_Position(pixel_index);
@@ -78,7 +78,13 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
 		// TODO
 		vec3 color;
-
+        Hit hit;
+        Object *obj = Closest_Intersection(ray,hit);
+        vec3 dummy;
+        if(obj!=NULL)//it means this is not background;
+            color = obj->material_shader->Shade_Surface(ray,dummy,dummy,1,false);
+        else
+            color = background_shader->Shade_Surface(ray,dummy,dummy,1,false);
 		// determine the color here
 
 		return color;
