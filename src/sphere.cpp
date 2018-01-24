@@ -40,10 +40,12 @@ bool Sphere::Intersection(const Ray& ray, std::vector<Hit>& hits) const
         new_hit2.ray_exiting = true;
 	new_hit1.object=this;
 	new_hit2.object=this;
-	if(t1>0)//if t1 is exiting it should not be viewed as hit
-		hits.push_back(new_hit1);
+    //make sure t2 is inserted before t1 if t1 is existing 
 	if(t2>0)
 		hits.push_back(new_hit2);
+    if(t1>0)//if t1 is exiting it should not be viewed as hit
+        hits.push_back(new_hit1);
+
 	return true;
     }   
 }
