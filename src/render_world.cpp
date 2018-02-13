@@ -1,3 +1,4 @@
+
 #include <vector>
 #include "render_world.h"
 #include "flat_shader.h"
@@ -24,29 +25,37 @@ Render_World::~Render_World()
 // Any intersection with t<=small_t should be ignored.
 Object* Render_World::Closest_Intersection(const Ray& ray,Hit& hit)
 {
+    if(1)
+    {
 		// TODO
 		double min_t = 10000.0;
 		Object* closest=NULL;
+        //printf("1\n");
 
+	    std::vector<Hit> hits;
 		for(size_t i = 0 ; i < objects.size();i++)//search all the object
 		{
-				std::vector<Hit> hits;
 				if(objects[i]->Intersection(ray,hits))//if true means 1-2 Hit push back to hits
 				{
-					int index = hits.size()-1;
-					if(hits[index].t < min_t && hits[index].t> small_t)//if this intersection is closer to the resource it will be the object returned
-					{
-						closest=objects[i];
-						hit.t= hits[index].t;
-						hit.object = hits[index].object;
-						hit.ray_exiting = hits[index].ray_exiting;
-						min_t = hits[index].t;
-					}			
-						//Object* test = hit.object;
-				}
+                    for(int j =0;j<hits.size();j++)
+                    {
+					    if(hits[j].t < min_t && hits[j].t >= small_t)//if this intersection is closer to the resource it will be the object returned
+					    {
+						    closest=objects[i];
+						    hit.t= hits[j].t;
+						    hit.object = hits[j].object;
+						    hit.ray_exiting = hits[j].ray_exiting;
+						    min_t = hits[j].t;
+					    }			
+					    	//Object* test = hit.object;
+			        }
+            	}
 		}
 
 		return closest;
+    }
+    
+    
 }
 
 // set up the initial view ray and call
@@ -78,13 +87,22 @@ vec3 Render_World::Cast_Ray(const Ray& ray,int recursion_depth)
 {
 		// TODO
 		vec3 color;
-        Hit hit;
+        Hit hit; 
         Object *obj = Closest_Intersection(ray,hit);
         vec3 dummy;
-        if(obj!=NULL)//it means this is not background;
-            color = obj->material_shader->Shade_Surface(ray,dummy,dummy,1,false);
+        if(obj!=NULL && recursion_depth <= recursion_depth_limit)//it means this is not background;
+        {
+            vec3 intersection = ray.Point(hit.t);
+            vec3 norm = hit.object->Normal(intersection);              
+            if(hit.ray_exiting)
+            {
+                norm = (-1.0)*norm;
+            }
+
+            color = obj->material_shader->Shade_Surface(ray,intersection,norm,recursion_depth,hit.ray_exiting);
+        }
         else
-            color = background_shader->Shade_Surface(ray,dummy,dummy,1,false);
+            color = background_shader->Shade_Surface(ray,dummy,dummy,recursion_depth,hit.ray_exiting);
 		// determine the color here
 
 		return color;
