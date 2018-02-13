@@ -26,7 +26,8 @@ public:
 
     virtual ~Light()
     {}
-
+  
+//    virtual bool Intersection(const Ray& ray, std::vector<Hit>& hits) const override;
     virtual vec3 Emitted_Light(const Ray& ray) const=0;
 };
 #endif
